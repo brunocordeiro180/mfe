@@ -131,7 +131,7 @@ clustering.formula <- function(formula, data, features="all",
 #' @examples
 #' ls.clustering()
 ls.clustering <- function() {
-  c("vdu", "vdb", "int", "sil", "pb", "ch", "nre", "sc", "sc10", "sc15", "bc", "xb")
+  c("vdu", "vdb", "int", "sil", "pb", "ch", "nre", "sc", "sc10", "sc15", "bc", "xb", "knn_out", "bic", "aic", "c_index")
 }
 
 ls.clustering.multiples <- function() {
@@ -205,30 +205,41 @@ m.bc <- function(x, y) {
   sum(table(y) > 50)
 }
 
-# m.knn_out <- function(x, y){
+m.knn_out <- function(x, y){
 
-#   ##cria lista de tamanho nrow(x) com elementos que variam de 0 a 1
-#   gp <- runif(nrow(x))
+  #pega 70% de ids aleatorios
+  idxs <- sample(1:nrow(x),as.integer(0.7*nrow(x)))
 
-#   ##reordena os dataframes de acordo com gp
-#   x <- x[order(gp), ]
-#   y <- y[order(gp)]
+  x_train <- x[idxs,]
+  x_test <- x[-idxs, ]
 
-#   #pega 70% de ids aleatorios
-#   idxs <- sample(1:nrow(x),as.integer(0.7*nrow(x)))
+  y_train <- y[idxs]
+  y_test <- y[-idxs]
 
-#   x_train <- x[idxs,]
-#   x_test <- x[-idxs, ]
+  ml <- class::knn(train= x_train, test = x_test, cl = y_train, k = 3)
 
-#   y_train <- y[idxs]
-#   y_test <- y[-idxs]
+  ## matriz de confusao
+  confusion <- table(y_test,ml)
 
-#   ml <- class::knn(train= x_train, test = x_test, cl = y_train, k = 3)
+  ##calculo do erro
+  length(y_test) - sum(y_test == ml)
 
-#   ## matriz de confusao
-#   confusion <- table(y_test,ml)
+}
 
-#   ##calculo do erro
-#   length(y_test) - sum(y_test == ml)
+m.bic <- function(x, y){
+  
+  data <- as.data.frame(cbind(x, y))
+  BIC(lm(data))
+}
 
-# }
+m.aic <- function(x, y){
+  
+  data <- as.data.frame(cbind(x, y))
+  AIC(lm(data))
+}
+
+m.c_index <- function(x, y){
+  
+  aux <- clusterCrit::intCriteria(x, y, "C_index")
+  aux$c_index
+}
