@@ -54,11 +54,19 @@ clustering <- function(...) {
 
 #' @rdname clustering
 #' @export
-clustering.default <- function(x, y, features="all",
+clustering.default <- function(x, y, cluster = FALSE, k=3, seed = FALSE, features="all",
                                summary=c("mean", "sd"),
                                transform=TRUE, ...) {
+  if(seed == TRUE){
+    set.seed(1)
+  }
+  
   if(!is.data.frame(x)) {
     stop("data argument must be a data.frame")
+  }
+
+  if(cluster == TRUE){
+    y <- kmeans(x, centers = k, nstart = 25)$cluster
   }
 
   if(is.data.frame(y)) {
@@ -92,6 +100,8 @@ clustering.default <- function(x, y, features="all",
 
   x <- as.matrix(x)
   y <- as.integer(y)
+
+  euc.dist <- function(x1, x2) sqrt(sum((x1 - x2) ^ 2))
 
   test <- createFolds(y, folds=2)
 
