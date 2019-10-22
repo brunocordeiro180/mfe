@@ -42,6 +42,9 @@
 #' ## Extract all meta-features using formula
 #' clustering(Species ~ ., iris)
 #'
+#' ## Extract all meta-features using labels as k'means result using formula
+#' clustering(Species ~ ., cluster = TRUE)
+#'
 #' ## Extract some meta-features
 #' clustering(iris[1:4], iris[5], c("vdu", "vdb", "sil"))
 #'
@@ -54,7 +57,7 @@ clustering <- function(...) {
 
 #' @rdname clustering
 #' @export
-clustering.default <- function(x, y, cluster = FALSE, k=3, seed = FALSE, features="all",
+clustering.default <- function(x, y = rep(NA, nrow(x)), cluster = FALSE, k=3, seed = FALSE, features="all",
                                summary=c("mean", "sd"),
                                transform=TRUE, ...) {
   if(seed == TRUE){
