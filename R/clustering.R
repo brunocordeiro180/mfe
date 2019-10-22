@@ -143,7 +143,7 @@ clustering.formula <- function(formula, data, features="all",
 #' @examples
 #' ls.clustering()
 ls.clustering <- function() {
-  c("vdu", "vdb", "int", "sil", "pb", "ch", "nre", "sc", "xb", "knn_out", "bic", "aic", "c_index", "cm", "cn")
+  c("vdu", "vdb", "gamma", "tau", "scat", "dis", "ray", "int", "sil", "pb", "ch", "nre", "sc", "xb", "knn_out", "bic", "aic", "c_index", "cm", "cn")
 }
 
 ls.clustering.multiples <- function() {
@@ -158,6 +158,31 @@ m.vdu <- function(x, y) {
 m.vdb <- function(x, y) {
   aux <- clusterCrit::intCriteria(x, y, "Davies_Bouldin")
   aux$davies_bouldin
+}
+
+m.gamma <- function(x, y) {
+  aux <- clusterCrit::intCriteria(x, y, "Gamma")
+  aux$gamma
+}
+
+m.tau <- function(x, y) {
+  aux <- clusterCrit::intCriteria(x, y, "Tau")
+  aux$tau
+}
+
+m.scat <- function(x, y) {
+  aux <- clusterCrit::intCriteria(x, y, "SD_Scat")
+  aux$sd_scat
+}
+
+m.dis <- function(x, y) {
+  aux <- clusterCrit::intCriteria(x, y, "SD_Dis")
+  aux$sd_dis
+}
+
+m.ray <- function(x, y) {
+  aux <- clusterCrit::intCriteria(x, y, "Ray_Turi")
+  aux$ray_turi
 }
 
 m.int <- function(x, y) {
