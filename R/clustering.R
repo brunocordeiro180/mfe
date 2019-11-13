@@ -63,25 +63,21 @@ clustering.default <- function(x, y = rep(NA, nrow(x)), cluster = FALSE, k=3, se
   if(seed == TRUE){
     set.seed(1)
   }
-  
+
   if(!is.data.frame(x)) {
     stop("data argument must be a data.frame")
   }
 
-  if(cluster == TRUE){
-    y <- kmeans(x, centers = k, nstart = 25)$cluster
-  }
-
-  if(is.data.frame(y)) {
+  if(is.data.frame(y) && cluster = FALSE) {
     y <- y[, 1]
   }
   y <- as.factor(y)
 
-  if(min(table(y)) < 2) {
+  if(min(table(y)) < 2 && cluster = FALSE) {
     stop("number of examples in the minority class should be >= 2")
   }
 
-  if(nrow(x) != length(y)) {
+  if(nrow(x) != length(y) && cluster = FALSE) {
     stop("x and y must have same number of rows")
   }
 
@@ -101,8 +97,13 @@ clustering.default <- function(x, y = rep(NA, nrow(x)), cluster = FALSE, k=3, se
     x <- x[sapply(x, is.numeric)]
   }
 
+  if(cluster == TRUE){
+    y <- kmeans(x, centers = k, nstart = 25)$cluster
+  }
+  
   x <- as.matrix(x)
   y <- as.integer(y)
+
 
   euc.dist <- function(x1, x2) sqrt(sum((x1 - x2) ^ 2))
 
@@ -230,37 +231,37 @@ m.sc <- function(x, y) {
   mean(table(y))
 }
 
-m.knn_out <- function(x, y){
+# m.knn_out <- function(x, y){
 
-  #pega 70% de ids aleatorios
-  idxs <- sample(1:nrow(x),as.integer(0.7*nrow(x)), replace=FALSE)
+#   #pega 70% de ids aleatorios
+#   idxs <- sample(1:nrow(x),as.integer(0.7*nrow(x)), replace=FALSE)
 
-  x_train <- x[idxs,]
-  x_test <- x[-idxs, ]
+#   x_train <- x[idxs,]
+#   x_test <- x[-idxs, ]
 
-  y_train <- y[idxs]
-  y_test <- y[-idxs]
+#   y_train <- y[idxs]
+#   y_test <- y[-idxs]
 
-  ml <- class::knn(train= x_train, test = x_test, cl = y_train, k = 3)
+#   ml <- class::knn(train= x_train, test = x_test, cl = y_train, k = 3)
 
-  # matriz de confusao
-  confusion <- table(y_test,ml)
+#   # matriz de confusao
+#   confusion <- table(y_test,ml)
 
-  #calculo do erro
-  length(y_test) - sum(y_test == ml)
+#   #calculo do erro
+#   length(y_test) - sum(y_test == ml)
 
-}
+# }
 
 m.bic <- function(x, y){
   
-  data <- as.data.frame(cbind(x, y))
-  BIC(lm(data))
+  xy <- as.data.frame(cbind(x, y))
+  BIC(lm(y ~ .,data = xy))
 }
 
 m.aic <- function(x, y){
   
-  data <- as.data.frame(cbind(x, y))
-  AIC(lm(data))
+  xy <- as.data.frame(cbind(x, y))
+  AIC(lm(y ~ .,data = xy))
 }
 
 m.c_index <- function(x, y){
@@ -293,8 +294,6 @@ m.cm <- function(x, y){
 
 m.cn <- function(x, y){
 
-  data <- as.data.frame(cbind(x, y))
-
-  clValid::connectivity(data, data$y)
+  clValid::connectivity(dist(x), y)
 
 }
