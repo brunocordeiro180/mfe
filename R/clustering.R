@@ -57,9 +57,15 @@ clustering <- function(...) {
 
 #' @rdname clustering
 #' @export
-clustering.default <- function(x, y = rep(NA, nrow(x)), cluster = FALSE, k=3, seed = FALSE, features="all",
+clustering.default <- function(x, y, cluster = FALSE, seed = FALSE, features="all",
                                summary=c("mean", "sd"),
                                transform=TRUE, ...) {
+  
+  if(cluster == TRUE){
+    k = nlevels(y)
+    y = kmeans(x, centers = k, nstart = 25)$cluster
+  }
+
   if(seed == TRUE){
     set.seed(1)
   }
@@ -68,16 +74,16 @@ clustering.default <- function(x, y = rep(NA, nrow(x)), cluster = FALSE, k=3, se
     stop("data argument must be a data.frame")
   }
 
-  if(is.data.frame(y) && cluster = FALSE) {
+  if(is.data.frame(y) && cluster == FALSE) {
     y <- y[, 1]
   }
   y <- as.factor(y)
 
-  if(min(table(y)) < 2 && cluster = FALSE) {
+  if(min(table(y)) < 2 && cluster == FALSE) {
     stop("number of examples in the minority class should be >= 2")
   }
 
-  if(nrow(x) != length(y) && cluster = FALSE) {
+  if(nrow(x) != length(y) && cluster == FALSE) {
     stop("x and y must have same number of rows")
   }
 
@@ -95,10 +101,6 @@ clustering.default <- function(x, y = rep(NA, nrow(x)), cluster = FALSE, k=3, se
     x <- binarize(x)
   } else {
     x <- x[sapply(x, is.numeric)]
-  }
-
-  if(cluster == TRUE){
-    y <- kmeans(x, centers = k, nstart = 25)$cluster
   }
   
   x <- as.matrix(x)
