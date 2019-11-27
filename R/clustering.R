@@ -21,14 +21,25 @@
 #'  \describe{
 #'    \item{"vdu"}{Calculate the Dunn Index.}
 #'    \item{"vdb"}{Calculate the Davies and Bouldin Index.}
+#'    \item{"gamma"}{Calculate the Gamma Index}
+#'    \item{"tau"}{Calculate the Tau Index}
+#'    \item{"scat"}{Calculate the SD_Scat Index}
+#'    \item{"dis"}{Calculate the SD_Dis Index}
+#'    \item{"ray"}{Calculate the Ray Index}
 #'    \item{"int"}{Calculate the INT index.}
 #'    \item{"sil"}{Calculate the mean silhouette value from data.}
 #'    \item{"pb"}{Pearson Correlation between class matching and instance 
 #'      distances.}
-#'    \item{"ch"}{Calinski and Harabaz index.}
+#'    \item{"ch"}{Calinski and Harabaz Index.}
 #'    \item{"nre"}{Normalized relative entropy.}
 #'    \item{"sc"}{Mean of the number of examples per class.}
 #'    \item{"xb"}{Ratio of overall deviation to cluster separation.}
+#'    \item{"bic"}{Bayesian information criterion.}
+#'    \item{"aic"}{Akaike information criterion.}
+#'    \item{"c_index"}{C_index Index.}
+#'    \item{"cm"}{Sum of the sums of the distances of items in a 
+#'      cluster to the centroid of its cluster}
+#'    \item{"cn"}{Measures whether neighboring items are in the same cluster.}
 #'  }
 #' @return A list named by the requested meta-features.
 #'
@@ -44,6 +55,9 @@
 #'
 #' ## Extract all meta-features using labels as k'means result using formula
 #' clustering(Species ~ ., cluster = TRUE)
+#'
+#' ## Extract all meta-features using labels as k'means result using formula and seed set
+#' clustering(Species ~ ., cluster = TRUE, seed = TRUE)
 #'
 #' ## Extract some meta-features
 #' clustering(iris[1:4], iris[5], c("vdu", "vdb", "sil"))
@@ -106,9 +120,6 @@ clustering.default <- function(x, y, cluster = FALSE, seed = FALSE, features="al
   x <- as.matrix(x)
   y <- as.integer(y)
 
-
-  euc.dist <- function(x1, x2) sqrt(sum((x1 - x2) ^ 2))
-
   test <- createFolds(y, folds=2)
 
   sapply(features, function(f) {
@@ -120,7 +131,7 @@ clustering.default <- function(x, y, cluster = FALSE, seed = FALSE, features="al
 
 #' @rdname clustering
 #' @export
-clustering.formula <- function(formula, data, features="all",
+clustering.formula <- function(formula, data, cluster = FALSE, seed = FALSE, features="all",
                                    summary=c("mean", "sd"),
                                    transform=TRUE, ...) {
   if(!inherits(formula, "formula")) {
@@ -146,7 +157,7 @@ clustering.formula <- function(formula, data, features="all",
 #' @examples
 #' ls.clustering()
 ls.clustering <- function() {
-  c("vdu", "vdb", "gamma", "tau", "scat", "dis", "ray", "int", "sil", "pb", "ch", "nre", "sc", "xb", "knn_out", "bic", "aic", "c_index", "cm", "cn")
+  c("vdu", "vdb", "gamma", "tau", "scat", "dis", "ray", "int", "sil", "pb", "ch", "nre", "sc", "xb", "bic", "aic", "c_index", "cm", "cn")
 }
 
 ls.clustering.multiples <- function() {
@@ -233,26 +244,23 @@ m.sc <- function(x, y) {
   mean(table(y))
 }
 
-# m.knn_out <- function(x, y){
+m.knn_out <- function(x, y){
 
-#   #pega 70% de ids aleatorios
-#   idxs <- sample(1:nrow(x),as.integer(0.7*nrow(x)), replace=FALSE)
+  idxs <- sample(1:nrow(x),as.integer(0.7*nrow(x)), replace=FALSE)
 
-#   x_train <- x[idxs,]
-#   x_test <- x[-idxs, ]
+  x_train <- x[idxs,]
+  x_test <- x[-idxs, ]
 
-#   y_train <- y[idxs]
-#   y_test <- y[-idxs]
+  y_train <- y[idxs]
+  y_test <- y[-idxs]
 
-#   ml <- class::knn(train= x_train, test = x_test, cl = y_train, k = 3)
+  ml <- class::knn(train= x_train, test = x_test, cl = y_train, k = 3)
 
-#   # matriz de confusao
-#   confusion <- table(y_test,ml)
+  confusion <- table(y_test,ml)
 
-#   #calculo do erro
-#   length(y_test) - sum(y_test == ml)
+  length(y_test) - sum(y_test == ml)
 
-# }
+}
 
 m.bic <- function(x, y){
   
@@ -284,7 +292,7 @@ m.cm <- function(x, y){
     centroid <- colMeans(df[, 1:ncol(x)])
     
     distances <- apply(df[,1:ncol(x)], 1, function(x){
-      euc.dist(x, centroid)
+      sqrt(sum((x - centroid) ^ 2))
     })
     
     sum_distances <- c(sum_distances, sum(distances))
