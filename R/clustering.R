@@ -162,7 +162,7 @@ clustering.formula <- function(formula, data, cluster = FALSE, seed = FALSE, fea
 #' @examples
 #' ls.clustering()
 ls.clustering <- function() {
-  c("vdu", "vdb", "gamma", "tau", "scat", "dis", "ray", "int", "sil", "pb", "ch", "nre", "sc", "xb", "bic", "aic", "c_index", "cm", "cn")
+  c("vdu", "vdb", "gamma", "tau", "scat", "dis", "ray", "int", "sil", "pb", "ch", "nre", "sc", "xb", "knn_out", "bic", "aic", "c_index", "cm", "cn")
 }
 
 ls.clustering.multiples <- function() {
@@ -310,6 +310,6 @@ m.cm <- function(x, y){
 m.cn <- function(x, y){
 
   Dist <- proxy::dist(x, method = "euclidean")
-  clValid::connectivity(Dist, y)
+  clValid::connectivity(Dist, y, method="gower")
 
 }
