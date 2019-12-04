@@ -74,13 +74,8 @@ clustering <- function(...) {
 clustering.default <- function(x, y, cluster = FALSE, seed = FALSE, features="all",
                                summary=c("mean", "sd"),
                                transform=TRUE, ...) {
-  
-  if(cluster == TRUE){
-    k = nlevels(y)
-    y = kmeans(x, centers = k, nstart = 25)$cluster
-  }
 
-  if(seed == TRUE){
+  if(seed[1]){
     set.seed(1)
   }
 
@@ -88,17 +83,35 @@ clustering.default <- function(x, y, cluster = FALSE, seed = FALSE, features="al
     stop("data argument must be a data.frame")
   }
 
-  if(is.data.frame(y) && cluster == FALSE) {
+  if(is.data.frame(y)) {
     y <- y[, 1]
   }
   y <- as.factor(y)
 
-  if(min(table(y)) < 2 && cluster == FALSE) {
+  if(min(table(y)) < 2) {
     stop("number of examples in the minority class should be >= 2")
   }
 
-  if(nrow(x) != length(y) && cluster == FALSE) {
+  if(nrow(x) != length(y)) {
     stop("x and y must have same number of rows")
+  }
+
+  if(transform) {
+    x <- binarize(x)
+  } else {
+    x <- x[sapply(x, is.numeric)]
+  }
+
+  if(cluster == TRUE){
+    k = nlevels(y)
+    y = kmeans(x, centers = k, nstart = 25)$cluster
+    
+    if(is.data.frame(y)) {
+      y <- y[, 1]
+    }
+    
+    y <- as.factor(y)
+
   }
 
   if(features[1] == "all") {
@@ -110,17 +123,9 @@ clustering.default <- function(x, y, cluster = FALSE, seed = FALSE, features="al
   if (length(summary) == 0) {
     summary <- "non.aggregated"
   }
-
-  if(transform) {
-    x <- binarize(x)
-  } else {
-    x <- x[sapply(x, is.numeric)]
-  }
   
   x <- as.matrix(x)
   y <- as.integer(y)
-
-  test <- createFolds(y, folds=2)
 
   sapply(features, function(f) {
     fn <- paste("m", f, sep=".")
@@ -145,7 +150,7 @@ clustering.formula <- function(formula, data, cluster = FALSE, seed = FALSE, fea
   modFrame <- stats::model.frame(formula, data)
   attr(modFrame, "terms") <- NULL
 
-  clustering.default(modFrame[-1], modFrame[1], features, summary, transform, 
+  clustering.default(modFrame[-1], modFrame[1], cluster, seed, features, summary, transform, 
     ...)
 }
 
@@ -304,6 +309,7 @@ m.cm <- function(x, y){
 
 m.cn <- function(x, y){
 
-  clValid::connectivity(dist(x), y)
+  Dist <- proxy::dist(x, method = "euclidean")
+  clValid::connectivity(Dist, y)
 
 }
