@@ -60,7 +60,7 @@
 #' clustering(Species ~ ., cluster = TRUE, seed = TRUE)
 #'
 #' ## Extract some meta-features
-#' clustering(iris[1:4], iris[5], c("vdu", "vdb", "sil"))
+#' clustering(iris[1:4], iris[5], features = c("vdu", "vdb", "sil"))
 #'
 #' ## Use another summarization function
 #' clustering(Species ~ ., iris, summary=c("min", "median", "max"))
@@ -310,6 +310,6 @@ m.cm <- function(x, y){
 m.cn <- function(x, y){
 
   Dist <- proxy::dist(x, method = "euclidean")
-  clValid::connectivity(Dist, y, method="gower")
+  clValid::connectivity(Dist, y)
 
 }
